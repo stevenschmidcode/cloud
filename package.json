@@ -1,0 +1,13 @@
+{
+    "name": "pixoo-pong-cloud",
+    "version": "2.0.0",
+    "type": "module",
+    "main": "cloud-server.js",
+    "scripts": {
+        "start": "node cloud-server.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "ws": "^8.18.0"
+    }
+}

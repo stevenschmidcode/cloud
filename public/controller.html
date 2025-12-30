@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>Pong Controller</title>
+    <style>
+        :root {
+            --bg: #f4f6f8;
+            --panel: #ffffff;
+            --btn: #0f5f7a;
+            --txt: #0c1a22;
+            --muted: #5c6b75;
+            --border: #c7d0d6;
+            --shadow: 0 10px 22px rgba(0, 0, 0, .08);
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui;
+            background: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .phone {
+            width: min(420px, 100%);
+            height: min(820px, 100%);
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: 42px;
+            box-shadow: var(--shadow);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-sizing: border-box;
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .title {
+            font-weight: 800;
+        }
+
+        .status {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: #d44;
+        }
+
+        .dot.ok {
+            background: #2bb673;
+        }
+
+        .screen {
+            display: none;
+            flex: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .head {
+            text-align: center;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 14px;
+            padding: 18px 16px;
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            background: var(--btn);
+            box-shadow: 0 6px 0 rgba(0, 0, 0, .12);
+            cursor: pointer;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 5px 0 rgba(0, 0, 0, .10);
+        }
+
+        .btn.outline {
+            background: #fff;
+            color: var(--txt);
+            border: 2px solid var(--border);
+            box-shadow: none;
+        }
+
+        .btn.disabled,
+        .btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .pad {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+        }
+
+        .arrow {
+            flex: 1;
+            border-radius: 22px;
+            border: 2px solid var(--border);
+            background: #fff;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(64px, 12vw, 110px);
+            font-weight: 900;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+
+        .arrow.pressed {
+            outline: 4px solid rgba(15, 95, 122, .25);
+            transform: translateY(1px);
+        }
+
+        .footerbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .pill {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #fff;
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="phone">
+        <div class="top">
+            <div class="title">Pong</div>
+            <div class="status"><span id="dot" class="dot"></span><span id="stat">Verbinde…</span></div>
+        </div>
+
+        <div id="screen-mode" class="screen active">
+            <div class="head">Select Mode</div>
+            <div class="stack">
+                <button class="btn" onclick="selectMode('cvc')">PC vs PC</button>
+                <button class="btn" onclick="selectMode('pvc')">Player vs PC</button>
+                <button class="btn" onclick="selectMode('pvp')">Player vs Player</button>
+            </div>
+            <div class="sub" id="roomLabel"></div>
+        </div>
+
+        <div id="screen-player" class="screen">
+            <div class="head" id="player-head">Choose Player</div>
+            <div class="stack">
+                <button class="btn" id="pick-p1" onclick="pickPlayer('p1')">Player 1</button>
+                <button class="btn" id="pick-p2" onclick="pickPlayer('p2')">Player 2</button>
+                <button class="btn" id="start-ready" onclick="startOrReady()">Start</button>
+                <button class="btn outline" onclick="goBackToMode()">Back</button>
+            </div>
+            <div class="sub" id="player-sub"></div>
+            <div class="footerbar">
+                <span class="pill" id="mode-pill">mode: —</span>
+                <span class="pill" id="me-pill">me: —</span>
+            </div>
+        </div>
+
+        <div id="screen-pad" class="screen">
+            <div class="head" id="pad-head">Gamepad</div>
+            <div class="pad">
+                <div class="arrow" id="up"><span>⬆️</span></div>
+                <div class="arrow" id="down"><span>⬇️</span></div>
+            </div>
+            <div class="footerbar">
+                <button class="btn outline" style="flex:1" onclick="openMenu()">Menu</button>
+                <span class="pill" id="pad-pill">—</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const room = location.pathname.split("/").pop() || "baden";
+        document.getElementById("roomLabel").textContent = `Room: ${room}`;
+
+        const wsProto = location.protocol === "https:" ? "wss" : "ws";
+        const ws = new WebSocket(`${wsProto}://${location.host}/ws?role=controller&room=${encodeURIComponent(room)}`);
+
+        const dot = document.getElementById("dot");
+        const stat = document.getElementById("stat");
+        ws.onopen = () => { dot.classList.add("ok"); stat.textContent = "Verbunden"; };
+        ws.onclose = () => { dot.classList.remove("ok"); stat.textContent = "Getrennt"; };
+        ws.onerror = () => { dot.classList.remove("ok"); stat.textContent = "Fehler"; };
+
+        function send(obj) { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+
+        const screens = {
+            mode: document.getElementById("screen-mode"),
+            player: document.getElementById("screen-player"),
+            pad: document.getElementById("screen-pad"),
+        };
+        function show(which) {
+            for (const k in screens) screens[k].classList.toggle("active", k === which);
+        }
+
+        const playerHead = document.getElementById("player-head");
+        const playerSub = document.getElementById("player-sub");
+        const pickP1 = document.getElementById("pick-p1");
+        const pickP2 = document.getElementById("pick-p2");
+        const startReadyBtn = document.getElementById("start-ready");
+        const modePill = document.getElementById("mode-pill");
+        const mePill = document.getElementById("me-pill");
+        const padPill = document.getElementById("pad-pill");
+        const padHead = document.getElementById("pad-head");
+
+        let currentMode = null;
+        let myWho = null;
+        let iAmReady = false;
+
+        let lobby = { mode: "cvc", claimed: { p1: false, p2: false }, ready: { p1: false, p2: false } };
+        let rendererOnline = false;
+
+        ws.onmessage = (e) => {
+            let msg; try { msg = JSON.parse(e.data); } catch { return; }
+            if (msg.type === "renderer") { rendererOnline = !!msg.online; }
+            if (msg.type === "lobby") applyLobby(msg);
+            if (msg.type === "start") { show("pad"); updatePadPill(); }
+            if (msg.type === "claim_result" && !msg.ok) alert("Player bereits belegt 🙂");
+        };
+
+        function updatePlayerScreenText() {
+            const modeName =
+                currentMode === "cvc" ? "PC vs PC" :
+                    currentMode === "pvc" ? "Player vs PC" :
+                        "Player vs Player";
+
+            modePill.textContent = `mode: ${modeName}`;
+            mePill.textContent = `me: ${myWho ? myWho.toUpperCase() : "—"}`;
+
+            if (!rendererOnline) {
+                playerSub.textContent = "Renderer ist offline (im Laden läuft der Client nicht).";
+            }
+
+            if (currentMode === "pvc") {
+                playerHead.textContent = "Player vs PC — Choose Player";
+                startReadyBtn.textContent = "Start";
+                playerSub.textContent = rendererOnline ? "Wähle Player 1 oder 2, dann Start." : playerSub.textContent;
+            } else if (currentMode === "pvp") {
+                playerHead.textContent = "Player vs Player — Choose Player";
+                startReadyBtn.textContent = iAmReady ? "Ready ✅" : "Ready";
+                playerSub.textContent = rendererOnline ? "Wähle Player und drücke Ready. Start wenn beide ready sind." : playerSub.textContent;
+            } else {
+                playerHead.textContent = "PC vs PC";
+                startReadyBtn.textContent = "Start";
+                playerSub.textContent = rendererOnline ? "Autoplay. Start startet eine neue Runde." : playerSub.textContent;
+            }
+        }
+
+        function applyLobby(msg) {
+            lobby = msg;
+
+            const p1Taken = lobby.claimed.p1 && myWho !== "p1";
+            const p2Taken = lobby.claimed.p2 && myWho !== "p2";
+            pickP1.disabled = p1Taken;
+            pickP2.disabled = p2Taken;
+            pickP1.classList.toggle("disabled", p1Taken);
+            pickP2.classList.toggle("disabled", p2Taken);
+
+            updatePadPill();
+            updatePlayerScreenText();
+        }
+
+        function updatePadPill() {
+            const m = currentMode || lobby.mode;
+            const modeName = (m === "cvc") ? "PC vs PC" : (m === "pvc") ? "Player vs PC" : "PvP";
+            const whoName = myWho ? myWho.toUpperCase() : "—";
+            padPill.textContent = `${modeName} • ${whoName}`;
+            padHead.textContent = `${modeName}`;
+        }
+
+        function selectMode(mode) {
+            currentMode = mode;
+            myWho = null;
+            iAmReady = false;
+            send({ type: "mode", mode });
+            show("player");
+            updatePlayerScreenText();
+        }
+
+        function pickPlayer(who) {
+            myWho = who;
+            iAmReady = false;
+            send({ type: "claim", who });
+            send({ type: "control", who });
+            updatePlayerScreenText();
+        }
+
+        function startOrReady() {
+            if (!rendererOnline) { alert("Renderer offline – im Laden muss renderer-client laufen."); return; }
+            if (!currentMode) return;
+
+            if (currentMode === "cvc") {
+                send({ type: "start" });
+                show("pad");
+                updatePadPill();
+                return;
+            }
+
+            if (currentMode === "pvc") {
+                if (!myWho) { alert("Bitte erst Player wählen 🙂"); return; }
+                send({ type: "side", who: myWho });
+                send({ type: "start" });
+                show("pad");
+                updatePadPill();
+                return;
+            }
+
+            if (currentMode === "pvp") {
+                if (!myWho) { alert("Bitte erst Player wählen 🙂"); return; }
+                iAmReady = !iAmReady;
+                send({ type: "ready", ready: iAmReady });
+                updatePlayerScreenText();
+            }
+        }
+
+        function goBackToMode() {
+            send({ type: "move", dir: 0 });
+            currentMode = null;
+            myWho = null;
+            iAmReady = false;
+            show("mode");
+        }
+
+        function openMenu() {
+            send({ type: "move", dir: 0 });
+            show("player");
+            updatePlayerScreenText();
+        }
+
+        const up = document.getElementById("up");
+        const down = document.getElementById("down");
+
+        function press(dir, el) { el.classList.add("pressed"); send({ type: "move", dir }); }
+        function release(el) { el.classList.remove("pressed"); send({ type: "move", dir: 0 }); }
+
+        function bindHold(el, dir) {
+            el.addEventListener("pointerdown", (e) => { e.preventDefault(); el.setPointerCapture?.(e.pointerId); press(dir, el); });
+            el.addEventListener("pointerup", (e) => { e.preventDefault(); release(el); });
+            el.addEventListener("pointercancel", (e) => { e.preventDefault(); release(el); });
+            el.addEventListener("pointerleave", (e) => { e.preventDefault(); release(el); });
+        }
+        bindHold(up, -1);
+        bindHold(down, +1);
+    </script>
+</body>
+
+</html>
