@@ -1,0 +1,236 @@
+:root{
+  --bg: #f2b08f;            /* peach */
+  --card: #f6cbb3;          /* inner tiles */
+  --border: rgba(0,0,0,.75);
+  --accent: #c85c2d;        /* outline */
+  --shadow: rgba(0,0,0,.15);
+  --muted: rgba(0,0,0,.55);
+  --gray: #d9d9d9;
+  --radius: 28px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: var(--bg);
+  color:#000;
+}
+
+.stage{
+  min-height:100%;
+  display:grid;
+  place-items:center;
+  padding: 22px;
+}
+
+.phone{
+  width:min(420px, 92vw);
+  min-height: 760px;
+  border: 2px solid var(--border);
+  border-radius: 44px;
+  padding: 18px 18px 22px;
+  background: transparent;
+  box-shadow: 0 18px 60px var(--shadow);
+  position: relative;
+  overflow:hidden;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 6px 6px 14px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.dot{
+  width:10px;height:10px;border-radius:999px;
+  background:#c1121f; /* red default */
+  border:1px solid rgba(0,0,0,.6);
+}
+.title{
+  font-weight:800;
+  letter-spacing:.2px;
+  font-size:18px;
+}
+
+.status{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+}
+
+.badge{
+  font-size:12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.55);
+  background: rgba(255,255,255,.35);
+}
+.badge.muted{opacity:.7}
+
+.screen{
+  padding: 10px 6px 0;
+}
+
+.h1{
+  text-align:center;
+  margin: 10px 0 16px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.stack{
+  display:flex;
+  flex-direction:column;
+  gap: 18px;
+}
+
+.tile{
+  width:100%;
+  border-radius: var(--radius);
+  border: 2px solid var(--accent);
+  background: var(--card);
+  box-shadow: 0 10px 22px rgba(0,0,0,.08);
+  padding: 22px 18px;
+  font-weight: 900;
+  text-align:center;
+  color:#000;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tile.big{
+  min-height: 170px;
+  font-size: 40px;
+}
+
+.tile.small{
+  min-height: 64px;
+  font-size: 22px;
+  padding: 16px 18px;
+}
+
+.tile.ghost{
+  background: transparent;
+  border-color: rgba(0,0,0,.5);
+}
+
+.tile:active{
+  transform: translateY(1px) scale(0.995);
+}
+
+.tile.disabled{
+  opacity:.55;
+  filter: grayscale(.2);
+  pointer-events:none;
+}
+
+.tile.selected{
+  background: var(--gray);
+}
+
+.tileTitle{font-size:44px; line-height:1}
+.tileSub{font-size:22px; font-weight:900; opacity:.85}
+
+.meta{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-top: 18px;
+  padding: 0 6px;
+}
+
+.pill{
+  font-size:12px;
+  padding: 6px 10px;
+  border: 1px solid rgba(0,0,0,.55);
+  border-radius:999px;
+  background: rgba(255,255,255,.35);
+}
+
+/* control buttons */
+.tile.control{
+  gap: 10px;
+}
+.controlText{
+  font-size: 40px;
+  letter-spacing: .04em;
+}
+
+.arrow{
+  width:0;height:0;
+  border-left: 42px solid transparent;
+  border-right: 42px solid transparent;
+}
+.arrow.up{
+  border-bottom: 70px solid #000;
+}
+.arrow.down{
+  border-top: 70px solid #000;
+}
+
+/* overlay */
+.overlay{
+  position:absolute;
+  inset:0;
+  background: rgba(0,0,0,.18);
+  display:grid;
+  place-items:center;
+  padding: 22px;
+  backdrop-filter: blur(2px);
+}
+
+.overlayCard{
+  width:min(360px, 92%);
+  border-radius: 30px;
+  border: 2px solid rgba(0,0,0,.65);
+  background: rgba(255,255,255,.55);
+  box-shadow: 0 18px 50px rgba(0,0,0,.18);
+  padding: 20px 18px 18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 14px;
+}
+
+.overlayTitle{
+  font-weight:900;
+  font-size: 26px;
+}
+
+.countCircle{
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,.65);
+  display:grid;
+  place-items:center;
+  background: rgba(220,220,220,.85);
+  position: relative;
+}
+.countNum{
+  font-size: 56px;
+  font-weight: 950;
+}
+.overlayHint{
+  font-size: 14px;
+  opacity: .75;
+}
+
+.hidden{display:none}

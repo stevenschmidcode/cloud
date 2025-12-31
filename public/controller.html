@@ -1,621 +1,99 @@
 <!doctype html>
 <html lang="de">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1" />
-    <meta name="theme-color" content="#0b1020" />
-    <title>Pong Controller</title>
-    <style>
-        :root {
-            --bg0: #070A12;
-            --bg1: #0B1020;
-            --card: rgba(255, 255, 255, .06);
-            --stroke: rgba(255, 255, 255, .12);
-            --txt: #EAF0FF;
-            --muted: rgba(234, 240, 255, .65);
-            --accent: #5EEAD4;
-            --accent2: #60A5FA;
-            --danger: #FB7185;
-            --shadow: 0 20px 70px rgba(0, 0, 0, .55);
-            --r: 24px;
-        }
-
-        * {
-            box-sizing: border-box
-        }
-
-        html,
-        body {
-            height: 100%
-        }
-
-        body {
-            margin: 0;
-            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-            background:
-                radial-gradient(1000px 700px at 20% 10%, rgba(96, 165, 250, .20), transparent 55%),
-                radial-gradient(900px 600px at 80% 20%, rgba(94, 234, 212, .18), transparent 55%),
-                radial-gradient(800px 500px at 50% 90%, rgba(251, 113, 133, .10), transparent 60%),
-                linear-gradient(180deg, var(--bg0), var(--bg1));
-            color: var(--txt);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-            overscroll-behavior: none;
-        }
-
-        .shell {
-            width: min(460px, 100%);
-            height: min(860px, 100%);
-            border: 1px solid var(--stroke);
-            background: rgba(255, 255, 255, .03);
-            border-radius: 36px;
-            box-shadow: var(--shadow);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            backdrop-filter: blur(14px);
-        }
-
-        .top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 14px 14px;
-            border: 1px solid var(--stroke);
-            background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
-            border-radius: 22px;
-        }
-
-        .brand {
-            display: flex;
-            flex-direction: column;
-            gap: 2px
-        }
-
-        .brand b {
-            font-size: 16px;
-            letter-spacing: .2px
-        }
-
-        .brand span {
-            font-size: 12px;
-            color: var(--muted)
-        }
-
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 10px
-        }
-
-        .pill {
-            padding: 7px 10px;
-            font-size: 12px;
-            color: var(--muted);
-            border: 1px solid var(--stroke);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, .05);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            background: var(--danger);
-            box-shadow: 0 0 0 4px rgba(251, 113, 133, .12)
-        }
-
-        .dot.ok {
-            background: var(--accent);
-            box-shadow: 0 0 0 4px rgba(94, 234, 212, .12)
-        }
-
-        .dot.warn {
-            background: #FBBF24;
-            box-shadow: 0 0 0 4px rgba(251, 191, 36, .12)
-        }
-
-        .screen {
-            display: none;
-            flex: 1;
-            gap: 14px;
-            flex-direction: column
-        }
-
-        .screen.active {
-            display: flex
-        }
-
-        .card {
-            border: 1px solid var(--stroke);
-            background: rgba(255, 255, 255, .05);
-            border-radius: var(--r);
-            padding: 16px;
-        }
-
-        .grid3 {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px
-        }
-
-        .title {
-            font-size: 14px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .18em;
-            margin: 0 0 12px 2px;
-        }
-
-        .btn {
-            width: 100%;
-            border: 1px solid var(--stroke);
-            background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .05));
-            color: var(--txt);
-            border-radius: 18px;
-            padding: 16px 14px;
-            font-weight: 800;
-            font-size: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-        }
-
-        .btn small {
-            font-weight: 700;
-            color: var(--muted);
-            font-size: 12px
-        }
-
-        .btn:active {
-            transform: translateY(1px)
-        }
-
-        .btn.primary {
-            border-color: rgba(94, 234, 212, .35);
-            background: linear-gradient(180deg, rgba(94, 234, 212, .20), rgba(96, 165, 250, .12));
-        }
-
-        .btn.ghost {
-            background: transparent;
-        }
-
-        .btn[disabled] {
-            opacity: .45;
-            cursor: not-allowed
-        }
-
-        .row {
-            display: flex;
-            gap: 10px
-        }
-
-        .row .btn {
-            flex: 1
-        }
-
-        .hint {
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.35;
-            margin-top: 6px;
-        }
-
-        .pad {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .arrow {
-            flex: 1;
-            border-radius: 28px;
-            border: 1px solid var(--stroke);
-            background:
-                radial-gradient(900px 240px at 50% 10%, rgba(94, 234, 212, .10), transparent 55%),
-                linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: clamp(64px, 12vw, 120px);
-            font-weight: 900;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .arrow:before {
-            content: "";
-            position: absolute;
-            inset: -2px;
-            background: radial-gradient(450px 220px at 50% 0%, rgba(96, 165, 250, .18), transparent 60%);
-            opacity: .6;
-            pointer-events: none;
-        }
-
-        .arrow.pressed {
-            outline: 4px solid rgba(94, 234, 212, .18);
-            transform: translateY(1px);
-            filter: brightness(1.08);
-        }
-
-        .footer {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .footer .btn {
-            padding: 14px 12px;
-            font-size: 16px
-        }
-
-        .kpi {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
-        .kpi .pill {
-            font-variant-numeric: tabular-nums;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Pong Controller</title>
+  <link rel="stylesheet" href="./controller.css" />
 </head>
-
 <body>
-    <div class="shell">
-        <div class="top">
-            <div class="brand">
-                <b>Pong</b>
-                <span id="roomLine">pong.stevenschmid.ch</span>
-            </div>
-            <div class="stat">
-                <div class="pill"><span id="dot" class="dot"></span><span id="stat">Connecting…</span></div>
-            </div>
+  <main class="stage">
+    <section class="phone" aria-label="Pong Controller">
+      <header class="topbar">
+        <div class="brand">
+          <div class="dot" id="wsDot" aria-hidden="true"></div>
+          <div class="title">Pong</div>
+        </div>
+        <div class="status">
+          <span class="badge" id="wsBadge">Getrennt</span>
+          <span class="badge muted" id="rendererBadge">Renderer: offline</span>
+        </div>
+      </header>
+
+      <!-- SCREEN 1: SELECT MODE -->
+      <section class="screen" id="screenMode" data-screen="mode">
+        <h1 class="h1">Select Mode</h1>
+
+        <button class="tile big" id="btnPVC">
+          <div class="tileTitle">Player</div>
+          <div class="tileSub">vs.</div>
+          <div class="tileTitle">Bot</div>
+        </button>
+
+        <button class="tile big" id="btnPVP">
+          <div class="tileTitle">Player</div>
+          <div class="tileSub">vs.</div>
+          <div class="tileTitle">Player</div>
+        </button>
+
+        <a class="tile small" id="btnWebsite" href="#" role="button">Website</a>
+      </section>
+
+      <!-- SCREEN 2: SELECT PLAYER -->
+      <section class="screen hidden" id="screenPlayer" data-screen="player">
+        <h1 class="h1" id="playerHeadline">Select Player</h1>
+
+        <div class="stack">
+          <button class="tile big" id="btnP1">Player 1</button>
+          <button class="tile big" id="btnP2">Player 2</button>
+          <button class="tile small" id="btnReady">Ready</button>
+          <button class="tile small ghost" id="btnBack">Back</button>
         </div>
 
-        <!-- MODE -->
-        <section id="s-mode" class="screen active">
-            <div class="card">
-                <div class="title">Mode</div>
-                <div class="grid3">
-                    <button class="btn" onclick="chooseMode('cvc')">
-                        <span>PC vs PC<br><small>Demo / Attract</small></span><span>🤖</span>
-                    </button>
-                    <button class="btn" onclick="chooseMode('pvc')">
-                        <span>Player vs PC<br><small>Solo</small></span><span>🎮</span>
-                    </button>
-                    <button class="btn primary" onclick="chooseMode('pvp')">
-                        <span>Player vs Player<br><small>2 Phones</small></span><span>⚔️</span>
-                    </button>
-                </div>
-                <div class="hint">Tipp: PvP startet automatisch, sobald beide „Ready“ sind.</div>
-            </div>
+        <div class="meta">
+          <span class="pill" id="metaMode">mode: -</span>
+          <span class="pill" id="metaMe">me: -</span>
+        </div>
+      </section>
 
-            <div class="card kpi">
-                <div class="pill">Renderer: <b id="rend">offline</b></div>
-                <div class="pill">Ping: <b id="ping">—</b></div>
-            </div>
-        </section>
+      <!-- SCREEN 3: CONTROLLER -->
+      <section class="screen hidden" id="screenControl" data-screen="control">
+        <h1 class="h1">Move</h1>
 
-        <!-- PLAYER -->
-        <section id="s-player" class="screen">
-            <div class="card">
-                <div class="title">Player</div>
-                <div class="row">
-                    <button id="p1" class="btn" onclick="claim('p1')">Player 1 <small
-                            id="p1s"></small><span>🟦</span></button>
-                    <button id="p2" class="btn" onclick="claim('p2')">Player 2 <small
-                            id="p2s"></small><span>🟥</span></button>
-                </div>
+        <div class="stack">
+          <button class="tile big control" id="btnUp">
+            <div class="arrow up" aria-hidden="true"></div>
+            <div class="controlText">UP</div>
+          </button>
 
-                <div class="row">
-                    <button id="action" class="btn primary" onclick="actionTap()">Start</button>
-                    <button class="btn ghost" onclick="goMode()">Back</button>
-                </div>
+          <button class="tile big control" id="btnDown">
+            <div class="arrow down" aria-hidden="true"></div>
+            <div class="controlText">DOWN</div>
+          </button>
 
-                <div class="hint" id="hint">Wähle deinen Player.</div>
-            </div>
+          <button class="tile small" id="btnPause">Pause</button>
+        </div>
 
-            <div class="card kpi">
-                <div class="pill">Mode: <b id="m">—</b></div>
-                <div class="pill">You: <b id="me">—</b></div>
-                <div class="pill">Ping: <b id="ping2">—</b></div>
-            </div>
-        </section>
+        <div class="meta">
+          <span class="pill" id="metaMode2">mode: -</span>
+          <span class="pill" id="metaMe2">me: -</span>
+        </div>
+      </section>
 
-        <!-- PAD -->
-        <section id="s-pad" class="screen">
-            <div class="pad">
-                <div id="up" class="arrow">⬆️</div>
-                <div id="down" class="arrow">⬇️</div>
-            </div>
-            <div class="footer">
-                <button class="btn ghost" style="flex:1" onclick="openMenu()">Menu</button>
-                <div class="pill">You: <b id="me2">—</b></div>
-            </div>
-        </section>
-    </div>
+      <!-- COUNTDOWN OVERLAY -->
+      <div class="overlay hidden" id="countdownOverlay" aria-hidden="true">
+        <div class="overlayCard">
+          <div class="overlayTitle">Starts in…</div>
+          <div class="countCircle" id="countCircle">
+            <div class="countNum" id="countNum">3</div>
+          </div>
+          <div class="overlayHint" id="overlayHint">Bitte warten…</div>
+        </div>
+      </div>
 
-    <script>
-        (() => {
-            // ===== Room logic: root domain => DEFAULT room (server defaults), but allow ?room= override
-            const params = new URLSearchParams(location.search);
-            const room = (params.get("room") || "").trim() || "baden"; // display only; ws query will send it too
-            document.getElementById("roomLine").textContent = `Room: ${room}`;
+    </section>
+  </main>
 
-            // ===== WebSocket with auto-reconnect
-            const wsProto = location.protocol === "https:" ? "wss" : "ws";
-            const wsUrl = `${wsProto}://${location.host}/ws?role=controller&room=${encodeURIComponent(room)}`;
-            let ws = null;
-            let cid = null;
-
-            const dot = document.getElementById("dot");
-            const stat = document.getElementById("stat");
-            const rend = document.getElementById("rend");
-            const pingEl = document.getElementById("ping");
-            const ping2El = document.getElementById("ping2");
-
-            let rendererOnline = false;
-            let pingT0 = 0;
-            let pingTimer = null;
-
-            function setStatus(ok, text, warn = false) {
-                dot.classList.toggle("ok", !!ok && !warn);
-                dot.classList.toggle("warn", !!warn);
-                stat.textContent = text;
-            }
-
-            function connect() {
-                ws = new WebSocket(wsUrl);
-                ws.onopen = () => {
-                    setStatus(true, "Connected");
-                    startPing();
-                };
-                ws.onclose = () => {
-                    setStatus(false, "Reconnecting…", true);
-                    rendererOnline = false;
-                    rend.textContent = "offline";
-                    stopPing();
-                    setTimeout(connect, 700);
-                };
-                ws.onerror = () => { };
-
-                ws.onmessage = (e) => {
-                    let msg; try { msg = JSON.parse(e.data); } catch { return; }
-
-                    if (msg.type === "hello" && msg.role === "controller") {
-                        cid = msg.cid;
-                    }
-
-                    if (msg.type === "renderer") {
-                        rendererOnline = !!msg.online;
-                        rend.textContent = rendererOnline ? "online" : "offline";
-                    }
-
-                    if (msg.type === "pong") {
-                        const ms = Math.round(performance.now() - pingT0);
-                        pingEl.textContent = `${ms}ms`;
-                        ping2El.textContent = `${ms}ms`;
-                    }
-
-                    if (msg.type === "lobby") applyLobby(msg);
-
-                    if (msg.type === "claim_result" && !msg.ok) {
-                        haptic("error");
-                    }
-
-                    if (msg.type === "start") {
-                        // reset ready & go pad
-                        iAmReady = false;
-                        show("pad");
-                        haptic("start");
-                        updateUI();
-                    }
-                };
-            }
-
-            function send(obj) {
-                if (!ws || ws.readyState !== 1) return;
-                ws.send(JSON.stringify(obj));
-            }
-
-            function startPing() {
-                stopPing();
-                pingTimer = setInterval(() => {
-                    if (!ws || ws.readyState !== 1) return;
-                    pingT0 = performance.now();
-                    send({ type: "ping" });
-                }, 1500);
-            }
-            function stopPing() { if (pingTimer) clearInterval(pingTimer); pingTimer = null; }
-
-            // ===== Haptics (best-effort)
-            function haptic(kind) {
-                if (!("vibrate" in navigator)) return;
-                if (kind === "tap") navigator.vibrate(12);
-                if (kind === "start") navigator.vibrate([20, 20, 20]);
-                if (kind === "error") navigator.vibrate([30, 30, 30, 30]);
-            }
-
-            // ===== Screens
-            const S = {
-                mode: document.getElementById("s-mode"),
-                player: document.getElementById("s-player"),
-                pad: document.getElementById("s-pad"),
-            };
-            function show(which) {
-                for (const k in S) S[k].classList.toggle("active", k === which);
-            }
-
-            // ===== State
-            let currentMode = null;      // "cvc"|"pvc"|"pvp"
-            let myWho = null;            // "p1"|"p2"
-            let iAmReady = false;
-
-            let lobby = { mode: "cvc", claimed: { p1: false, p2: false }, ready: { p1: false, p2: false } };
-
-            const p1Btn = document.getElementById("p1");
-            const p2Btn = document.getElementById("p2");
-            const p1s = document.getElementById("p1s");
-            const p2s = document.getElementById("p2s");
-            const actionBtn = document.getElementById("action");
-            const hint = document.getElementById("hint");
-            const mEl = document.getElementById("m");
-            const meEl = document.getElementById("me");
-            const me2El = document.getElementById("me2");
-
-            function modeLabel(m) {
-                return m === "cvc" ? "PC vs PC" : m === "pvc" ? "Player vs PC" : "PvP";
-            }
-
-            function updateUI() {
-                mEl.textContent = currentMode ? modeLabel(currentMode) : "—";
-                meEl.textContent = myWho ? myWho.toUpperCase() : "—";
-                me2El.textContent = myWho ? myWho.toUpperCase() : "—";
-
-                // availability indicators
-                const p1Taken = lobby.claimed.p1 && myWho !== "p1";
-                const p2Taken = lobby.claimed.p2 && myWho !== "p2";
-                p1Btn.disabled = p1Taken;
-                p2Btn.disabled = p2Taken;
-                p1s.textContent = p1Taken ? "taken" : "";
-                p2s.textContent = p2Taken ? "taken" : "";
-
-                if (!rendererOnline) {
-                    hint.textContent = "Renderer offline (im Laden muss renderer-client laufen).";
-                    actionBtn.disabled = true;
-                    actionBtn.textContent = "Offline";
-                    return;
-                }
-
-                actionBtn.disabled = false;
-
-                if (currentMode === "cvc") {
-                    actionBtn.textContent = "Start";
-                    hint.textContent = "Demo läuft. Start startet eine neue Runde.";
-                } else if (currentMode === "pvc") {
-                    actionBtn.textContent = "Start";
-                    hint.textContent = myWho ? "Start startet die Runde." : "Wähle Player 1 oder 2.";
-                } else if (currentMode === "pvp") {
-                    actionBtn.textContent = iAmReady ? "Ready ✅" : "Ready";
-                    hint.textContent = "Beide ready ⇒ Start automatisch.";
-                }
-            }
-
-            function applyLobby(msg) {
-                lobby = msg;
-                updateUI();
-            }
-
-            // ===== Actions exposed to buttons
-            window.chooseMode = (m) => {
-                haptic("tap");
-                currentMode = m;
-                myWho = null;
-                iAmReady = false;
-                send({ type: "mode", mode: m });
-                show("player");
-                updateUI();
-            };
-
-            window.claim = (who) => {
-                haptic("tap");
-                myWho = who;
-                iAmReady = false;
-                send({ type: "claim", who }); // claim includes who
-                updateUI();
-            };
-
-            window.actionTap = () => {
-                haptic("tap");
-                if (!currentMode) return;
-
-                if (currentMode === "cvc") {
-                    send({ type: "start" });
-                    show("pad");
-                    return;
-                }
-                if (currentMode === "pvc") {
-                    if (!myWho) { haptic("error"); return; }
-                    send({ type: "side", who: myWho });
-                    send({ type: "start" });
-                    show("pad");
-                    return;
-                }
-                // pvp
-                if (!myWho) { haptic("error"); return; }
-                iAmReady = !iAmReady;
-                // ✅ FIX: send ready WITH who
-                send({ type: "ready", who: myWho, ready: iAmReady });
-                updateUI();
-            };
-
-            window.goMode = () => {
-                haptic("tap");
-                currentMode = null;
-                myWho = null;
-                iAmReady = false;
-                show("mode");
-            };
-
-            window.openMenu = () => {
-                haptic("tap");
-                // stop movement on menu
-                if (myWho) send({ type: "move", who: myWho, dir: 0 });
-                show("player");
-                updateUI();
-            };
-
-            // ===== Pad controls: hold buttons, send who always
-            const up = document.getElementById("up");
-            const down = document.getElementById("down");
-
-            function press(dir, el) {
-                if (!myWho) return;
-                el.classList.add("pressed");
-                send({ type: "move", who: myWho, dir }); // ✅ always includes who
-            }
-            function release(el) {
-                if (!myWho) return;
-                el.classList.remove("pressed");
-                send({ type: "move", who: myWho, dir: 0 });
-            }
-            function bindHold(el, dir) {
-                el.addEventListener("pointerdown", (e) => { e.preventDefault(); el.setPointerCapture?.(e.pointerId); press(dir, el); haptic("tap"); }, { passive: false });
-                el.addEventListener("pointerup", (e) => { e.preventDefault(); release(el); }, { passive: false });
-                el.addEventListener("pointercancel", (e) => { e.preventDefault(); release(el); }, { passive: false });
-                el.addEventListener("pointerleave", (e) => { e.preventDefault(); release(el); }, { passive: false });
-            }
-            bindHold(up, -1);
-            bindHold(down, +1);
-
-            // ===== Ping responder from renderer (renderer should echo ping->pong; if not, we do it on controller side via cloud relay)
-            // We'll still send ping; renderer-client.js can just ignore, cloud will relay only if renderer broadcasts it.
-            // If you want immediate ping: let cloud relay controller->renderer->controller is fine.
-
-            connect();
-        })();
-    </script>
+  <script src="./controller.js"></script>
 </body>
-
 </html>
