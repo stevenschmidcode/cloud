@@ -5,24 +5,26 @@ import path from "path";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 10000;
+const DEFAULT_ROOM = process.env.DEFAULT_ROOM || "baden";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 
-app.get("/r/:room", (req, res) => {
+// Root = default room controller
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "controller.html"));
+});
+app.get("/controller", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "controller.html"));
 });
 
-app.get("/", (req, res) => {
-    res.redirect("/r/baden");
-});
-
-app.get("/controller", (req, res) => {
-    res.redirect("/r/baden");
+// Optional multi-room (falls du später mehrere Screens willst)
+app.get("/r/:room", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "controller.html"));
 });
 
 const server = http.createServer(app);
@@ -39,12 +41,26 @@ function safeSend(ws, obj) {
 function newCid() {
     return crypto.randomBytes(8).toString("hex");
 }
+function parseRoom(reqUrl) {
+    // room can come from ws query ?room= OR default
+    try {
+        const u = new URL(reqUrl, "http://x");
+        return (u.searchParams.get("room") || DEFAULT_ROOM).trim() || DEFAULT_ROOM;
+    } catch {
+        return DEFAULT_ROOM;
+    }
+}
 
 wss.on("connection", (ws, req) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const role = url.searchParams.get("role");
-    const room = (url.searchParams.get("room") || "").trim();
-    if (!role || !room) return ws.close();
+    const role = (() => {
+        try {
+            const u = new URL(req.url, `http://${req.headers.host}`);
+            return u.searchParams.get("role");
+        } catch { return null; }
+    })();
+
+    const room = parseRoom(req.url);
+    if (!role) return ws.close();
 
     const R = getRoom(room);
 
@@ -64,18 +80,17 @@ wss.on("connection", (ws, req) => {
             if (R.renderer === ws) R.renderer = null;
             for (const c of R.controllers.values()) safeSend(c, { type: "renderer", online: false });
         });
+
         return;
     }
 
-    // controller
-    const cid = newCid();
-    ws._cid = cid;
+    if (role !== "controller") return ws.close();
 
+    const cid = newCid();
     R.controllers.set(cid, ws);
 
     safeSend(ws, { type: "hello", role: "controller", room, cid });
     safeSend(ws, { type: "renderer", online: !!R.renderer });
-
     if (R.renderer) safeSend(R.renderer, { type: "connect", cid });
 
     ws.on("message", (buf) => {
@@ -89,4 +104,4 @@ wss.on("connection", (ws, req) => {
     });
 });
 
-server.listen(PORT, () => console.log("Cloud listening on", PORT));
+server.listen(PORT, () => console.log("Cloud listening on", PORT, "default room =", DEFAULT_ROOM));
