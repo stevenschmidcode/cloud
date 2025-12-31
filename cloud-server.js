@@ -17,6 +17,14 @@ app.get("/r/:room", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "controller.html"));
 });
 
+app.get("/", (req, res) => {
+    res.redirect("/r/baden");
+});
+
+app.get("/controller", (req, res) => {
+    res.redirect("/r/baden");
+});
+
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server, path: "/ws" });
 
